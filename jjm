@@ -3,7 +3,8 @@ import Form from './Form';
 
 function TextBox() {
   const [custIDs, setCustIDs] = useState([]);
-
+  const [inputSentence, setInputSentence] = useState('');
+  
   const fetchCustIDs = async (inputSentence) => {
     try {
       const response = await fetch('/process', {
@@ -31,11 +32,12 @@ function TextBox() {
       <Form fetchCustIDs={fetchCustIDs} />
       <div>
         <h2>Matching CustIDs:</h2>
-        <ul>
-          {custIDs.map((custID, index) => (
-            <li key={index}>{custID}</li>
-          ))}
-        </ul>
+        <textarea
+          rows="5"
+          cols="30"
+          value={custIDs.join('\n')}
+          readOnly
+        ></textarea>
       </div>
     </div>
   );
