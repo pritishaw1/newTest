@@ -1,53 +1,44 @@
-from flask import Flask, request, jsonify
-import pandas as pd
-from sklearn.feature_extraction.text import CountVectorizer
-from fuzzywuzzy import fuzz
-from nltk.tokenize import RegexpTokenizer
+import React, { useState } from 'react';
+import Form from './Form';
 
-# Create the dataset
-data = {
-    'CustID': [1, 2, 3, 4, 5, 6],
-    'Tags': ['A,B,C,D', 'A,D,C,G', 'C,T,D,B', 'D,C,L,E', 'A,D,C,G', 'W,P,A,S']
+function TextBox() {
+  const [custIDs, setCustIDs] = useState([]);
+
+  const fetchCustIDs = async (inputSentence) => {
+    try {
+      const response = await fetch('/process', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ input_sentence: inputSentence }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data = await response.json();
+      setCustIDs(data.result);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  return (
+    <div>
+      <h1>Basic React Textbox App</h1>
+      <Form fetchCustIDs={fetchCustIDs} />
+      <div>
+        <h2>Matching CustIDs:</h2>
+        <ul>
+          {custIDs.map((custID) => (
+            <li key={custID}>{custID}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
 }
 
-df = pd.DataFrame(data)
-
-# Convert Tags into a binary representation
-vectorizer = CountVectorizer(tokenizer=lambda x: x.split(','))
-tag_matrix = vectorizer.fit_transform(df['Tags']).toarray()
-
-# Custom list of stopwords
-custom_stop_words = set(['i', 'want', 'and'])  # Add your own stopwords here
-
-# Regular expression pattern for word tokenization
-pattern = r'\w+'
-tokenizer = RegexpTokenizer(pattern)
-
-# Function to preprocess the input sentence and extract tags
-def preprocess_input(input_sentence):
-    tokens = tokenizer.tokenize(input_sentence.lower())
-    filtered_tokens = [token for token in tokens if token not in custom_stop_words]
-    return filtered_tokens
-
-# Function to get similar CustIDs based on input tags
-def get_similar_custIDs(input_sentence):
-    input_tags = preprocess_input(input_sentence)
-    similar_custIDs = []
-
-    for tag in input_tags:
-        fuzzy_threshold = 50
-        similar_custIDs.extend(df[df['Tags'].apply(lambda x: fuzz.partial_ratio(tag.lower(), x.lower()) >= fuzzy_threshold)]['CustID'])
-    
-    return list(set(similar_custIDs))
-
-app = Flask(__name__)
-
-@app.route('/process', methods=['POST'])
-def process():
-    if request.method == 'POST':
-        input_sentence = request.json['input_sentence']
-        similar_custIDs = get_similar_custIDs(input_sentence)
-        return jsonify({'result': similar_custIDs})
-
-if __name__ == '__main__':
-    app.run(debug=True)
+export default TextBox;
