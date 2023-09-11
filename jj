@@ -1,14 +1,45 @@
-// src/App.js
-import React from 'react';
-import './App.css';
-import TextBox from './TextBox';
+// src/Form.js
+import React, { useState } from 'react';
 
-function App() {
+function Form() {
+  const [inputSentence, setInputSentence] = useState('');
+  const [result, setResult] = useState('');
+
+  const handleInputChange = (e) => {
+    setInputSentence(e.target.value);
+  };
+
+  const handleSubmit = async () => {
+    try {
+      const response = await fetch('/process', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ input_sentence: inputSentence }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setResult(data.result);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
   return (
-    <div className="App">
-      <TextBox />
+    <div>
+      <h2>Text Processing</h2>
+      <textarea
+        placeholder="Enter your text here..."
+        value={inputSentence}
+        onChange={handleInputChange}
+      ></textarea>
+      <button onClick={handleSubmit}>Submit</button>
+      {result && <p>Matching CustIDs: {result}</p>}
     </div>
   );
 }
 
-export default App;
+export default Form;
