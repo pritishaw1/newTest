@@ -1,0 +1,61 @@
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+class JsonData {
+    private String name;
+    private int age;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+}
+
+public class JsonFileProcessor {
+    public static void main(String[] args) {
+        String jsonFileName = "data.json"; // Replace with your JSON file name
+
+        try {
+            String jsonContent = new String(Files.readAllBytes(Paths.get(jsonFileName)));
+            JSONObject jsonObject = new JSONObject(jsonContent);
+
+            JsonData jsonData = processJson(jsonObject);
+
+            // Access the assigned dynamic values using getter methods
+            System.out.println("Name: " + jsonData.getName());
+            System.out.println("Age: " + jsonData.getAge());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static JsonData processJson(JSONObject jsonObject) {
+        JsonData jsonData = new JsonData();
+
+        // Example: Assign dynamic values by iterating through JSON data
+        jsonData.setName(jsonObject.getString("name"));
+        jsonData.setAge(jsonObject.getInt("age"));
+
+        // You can add more logic here to assign dynamic values based on your requirements.
+
+        return jsonData;
+    }
+}
