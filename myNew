@@ -1,0 +1,60 @@
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+import java.io.FileReader;
+import java.io.IOException;
+
+public class JsonProcessor {
+    private String variable1 = "";
+    private String variable2 = "";
+
+    public void assignVariables(String value1, String value2) {
+        this.variable1 = value1;
+        this.variable2 = value2;
+    }
+
+    public String processJsonFile(String filePath) {
+        JSONParser parser = new JSONParser();
+        try {
+            Object obj = parser.parse(new FileReader(filePath));
+            if (obj instanceof JSONObject) {
+                JSONObject json = (JSONObject) obj;
+                
+                // Iterate over the keys in the JSON object
+                for (Object key : json.keySet()) {
+                    if (key instanceof String) {
+                        String keyStr = (String) key;
+                        
+                        // Check if the key is dynamic
+                        if (keyStr.equals("dynamic_key1")) {
+                            json.put(keyStr, variable1);
+                        } else if (keyStr.equals("dynamic_key2")) {
+                            json.put(keyStr, variable2);
+                        }
+                    }
+                }
+                return json.toJSONString();
+            } else {
+                return "Invalid JSON file format";
+            }
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+            return "Error processing JSON file";
+        }
+    }
+
+    public static void main(String[] args) {
+        JsonProcessor jsonProcessor = new JsonProcessor();
+        
+        // Set the values for variable1 and variable2
+        jsonProcessor.assignVariables("Value for Variable 1", "Value for Variable 2");
+        
+        // Specify the path to your JSON file
+        String filePath = "path/to/your/jsonfile.json";
+        
+        // Process the JSON file and return the modified JSON
+        String result = jsonProcessor.processJsonFile(filePath);
+        System.out.println(result);
+    }
+}
