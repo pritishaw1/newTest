@@ -1,60 +1,25 @@
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import csv
+import random
 
-import java.io.FileReader;
-import java.io.IOException;
+# List of items
+items = ['A', 'B', 'C', 'D', 'E']
 
-public class JsonProcessor {
-    private String variable1 = "";
-    private String variable2 = "";
+# Generate 10000 lines of data
+num_lines = 10000
 
-    public void assignVariables(String value1, String value2) {
-        this.variable1 = value1;
-        this.variable2 = value2;
-    }
+# Specify the CSV file name
+csv_file_name = 'output_data.csv'
 
-    public String processJsonFile(String filePath) {
-        JSONParser parser = new JSONParser();
-        try {
-            Object obj = parser.parse(new FileReader(filePath));
-            if (obj instanceof JSONObject) {
-                JSONObject json = (JSONObject) obj;
-                
-                // Iterate over the keys in the JSON object
-                for (Object key : json.keySet()) {
-                    if (key instanceof String) {
-                        String keyStr = (String) key;
-                        
-                        // Check if the key is dynamic
-                        if (keyStr.equals("dynamic_key1")) {
-                            json.put(keyStr, variable1);
-                        } else if (keyStr.equals("dynamic_key2")) {
-                            json.put(keyStr, variable2);
-                        }
-                    }
-                }
-                return json.toJSONString();
-            } else {
-                return "Invalid JSON file format";
-            }
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
-            return "Error processing JSON file";
-        }
-    }
+# Open the CSV file in write mode
+with open(csv_file_name, 'w', newline='') as csvfile:
+    # Create a CSV writer
+    csv_writer = csv.writer(csvfile, delimiter=',')
 
-    public static void main(String[] args) {
-        JsonProcessor jsonProcessor = new JsonProcessor();
-        
-        // Set the values for variable1 and variable2
-        jsonProcessor.assignVariables("Value for Variable 1", "Value for Variable 2");
-        
-        // Specify the path to your JSON file
-        String filePath = "path/to/your/jsonfile.json";
-        
-        // Process the JSON file and return the modified JSON
-        String result = jsonProcessor.processJsonFile(filePath);
-        System.out.println(result);
-    }
-}
+    # Write the header
+    csv_writer.writerow(['USER', 'INPUT'])
+
+    # Write the data
+    for _ in range(num_lines):
+        user_number = random.randint(1, 20)
+        selected_item = random.choice(items)
+        csv_writer.writerow([user_number, f'I want {selected_item} Data'])
