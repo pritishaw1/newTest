@@ -1,0 +1,38 @@
+import pandas as pd
+
+# Create a list of customer journeys
+customer_journeys = ["Walk-In", "Roll-Over", "Phone-In", "Online Purchase", "Email Inquiry", "Social Media Interaction"]
+
+# Create a DataFrame with two columns: "customer_journey" and "next_customer_journey"
+df = pd.DataFrame(columns=["customer_journey", "next_customer_journey"])
+
+# Iterate through the list of customer journeys and add them to the DataFrame
+for i in range(len(customer_journeys) - 1):
+    current_journey = customer_journeys[i]
+    next_journey = customer_journeys[i + 1]
+    df = df.append({"customer_journey": current_journey, "next_customer_journey": next_journey}, ignore_index=True)
+
+# Shuffle the DataFrame to ensure randomness
+df = df.sample(frac=1).reset_index(drop=True)
+
+# Save the DataFrame to a CSV file
+df.to_csv("customer_journeys.csv", index=False)
+
+
+import nltk
+
+# Load the CSV file
+data = pd.read_csv("customer_journeys.csv")
+
+# Extract customer journeys and next customer journeys
+customer_journeys = data["customer_journey"].tolist()
+next_customer_journeys = data["next_customer_journey"].tolist()
+
+# Create a bigram language model
+bigram_model = nltk.BigramCollocationFinder.from_words(customer_journeys + next_customer_journeys)
+
+# Train the bigram language model
+bigram_model.apply_freq_filter(2)
+
+# Save the bigram language model to a file
+bigram_model.save("bigram_model.pkl")
