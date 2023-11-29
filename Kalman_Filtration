@@ -1,0 +1,35 @@
+import pandas as pd
+import numpy as np
+from sklearn.ensemble import IsolationForest
+from scipy import stats
+from statsmodels.tsa.api import VAR, KalmanFilter
+
+# Load the dataset
+data = pd.read_csv("data.csv")
+
+# Isolate anomalies using IsolationForest
+isolation_forest = IsolationForest(n_estimators=100, random_state=42)
+isolation_forest.fit(data)
+anomaly_scores = isolation_forest.score_samples(data)
+
+# Threshold anomaly scores to identify anomalies
+anomaly_threshold = np.percentile(anomaly_scores, 95)
+anomalies = data[anomaly_scores <= anomaly_threshold]
+
+# Apply Kalman Filter to the data
+kalman_filter = KalmanFilter(data)
+filtered_data = kalman_filter.filter(data)
+
+# Calculate residuals between the original data and the filtered data
+residuals = data - filtered_data
+
+# Identify anomalies based on Z-score of residuals
+z_scores = stats.zscore(residuals)
+anomalies_kalman = data[np.abs(z_scores) > 3]
+
+# Combine anomalies detected by both methods
+merged_anomalies = pd.concat([anomalies, anomalies_kalman])
+merged_anomalies = merged_anomalies.drop_duplicates()
+
+# Print the detected anomalies
+print(merged_anomalies)
