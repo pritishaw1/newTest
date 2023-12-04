@@ -1,0 +1,16 @@
+# Automatically determine threshold using IQR
+def find_threshold(data):
+    q1 = data.quantile(0.25)
+    q3 = data.quantile(0.75)
+    iqr = q3 - q1
+    threshold = q3 + 1.5 * iqr
+    return threshold
+
+# Set thresholds for each column
+for column in numerical_columns:
+    threshold = find_threshold(df[f'{column}_combined_anomalies'])
+    df[f'{column}_is_anomalous'] = df[f'{column}_combined_anomalies'] > threshold
+
+# Print or save the results
+print(df)
+# df.to_csv('auto_threshold_anomaly_results.csv', index=False)
