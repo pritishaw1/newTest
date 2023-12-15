@@ -1,0 +1,92 @@
+class TrieNode:
+    def __init__(self):
+        self.children = {}
+        self.is_end_of_word = False
+
+
+class AutocompleteModel:
+    def __init__(self):
+        self.root = TrieNode()
+
+    def insert(self, word):
+        node = self.root
+        for char in word:
+            if char not in node.children:
+                node.children[char] = TrieNode()
+            node = node.children[char]
+        node.is_end_of_word = True
+
+    def build_model(self, task_list):
+        for task in task_list:
+            self.insert(task.lower())
+
+    def autocomplete(self, prefix):
+        node = self.root
+        for char in prefix:
+            if char not in node.children:
+                return []
+            node = node.children[char]
+
+        suggestions = []
+        self._collect_autocomplete(node, prefix, suggestions)
+        return suggestions
+
+    def _collect_autocomplete(self, node, prefix, suggestions):
+        if node.is_end_of_word:
+            suggestions.append(prefix)
+        for char, child_node in node.children.items():
+            self._collect_autocomplete(child_node, prefix + char, suggestions)
+
+
+# Example usage:
+tasks_list = ["task1", "task2", "task3", "example_task", "python_task"]
+autocomplete_model = AutocompleteModel()
+autocomplete_model.build_model(tasks_list)
+
+user_input = "ta"
+suggestions = autocomplete_model.autocomplete(user_input.lower())
+
+print("Autocomplete Suggestions:")
+for suggestion in suggestions:
+    print(suggestion)
+
+
+
+
+
+pip install spacy
+python -m spacy download en_core_web_md
+
+import spacy
+
+class EnhancedAutocompleteModel:
+    def __init__(self, task_list):
+        self.nlp = spacy.load("en_core_web_md")
+        self.tasks_list = [task.lower() for task in task_list]
+        self.word_vectors = self._get_word_vectors()
+
+    def _get_word_vectors(self):
+        return {task.lower(): self.nlp(task).vector for task in self.tasks_list}
+
+    def autocomplete(self, input_text, top_n=3):
+        input_vector = self.nlp(input_text).vector
+        similarities = {}
+
+        for task, vector in self.word_vectors.items():
+            similarity = self.nlp(" ".join([input_text, task])).similarity(self.nlp(" ".join([input_text])))
+            similarities[task] = similarity
+
+        sorted_suggestions = sorted(similarities.items(), key=lambda x: x[1], reverse=True)[:top_n]
+        suggestions = [suggestion[0] for suggestion in sorted_suggestions]
+        return suggestions
+
+# Example usage:
+tasks_list = ["task1", "task2", "task3", "example_task", "python_task"]
+enhanced_autocomplete_model = EnhancedAutocompleteModel(tasks_list)
+
+user_input = "ta"
+suggestions = enhanced_autocomplete_model.autocomplete(user_input.lower())
+
+print("Enhanced Autocomplete Suggestions:")
+for suggestion in suggestions:
+    print(suggestion)
